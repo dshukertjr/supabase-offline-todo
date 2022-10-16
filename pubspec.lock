@@ -237,6 +237,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  flutter_riverpod:
+    dependency: "direct main"
+    description:
+      name: flutter_riverpod
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.3+1"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -339,12 +346,19 @@ packages:
     source: hosted
     version: "0.6.4"
   json_annotation:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_annotation
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.7.0"
+  json_serializable:
+    dependency: "direct dev"
+    description:
+      name: json_serializable
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.5.1"
   jwt_decode:
     dependency: transitive
     description:
@@ -409,7 +423,7 @@ packages:
     source: hosted
     version: "1.8.2"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       url: "https://pub.dartlang.org"
