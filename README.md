@@ -1,8 +1,6 @@
 # Offline Todo App
 
-Simple example app on how you can use Hydrated Bloc with Supabase to create an app with offline caching ability.
-
-
+Simple example app on how you can use [Hydrated Bloc](https://pub.dev/packages/hydrated_bloc) with Supabase to create an app with offline caching ability.
 
 ## Table definition
 

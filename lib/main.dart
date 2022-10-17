@@ -108,7 +108,12 @@ class _NewTaskComposerState extends State<NewTaskComposer> {
       child: Material(
         color: const Color(0xFFEEEEEE),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.only(
+            top: 8,
+            left: 8,
+            right: 8,
+            bottom: MediaQuery.of(context).padding.bottom + 8,
+          ),
           child: Row(
             children: [
               Expanded(
