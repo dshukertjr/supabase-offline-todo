@@ -17,4 +17,8 @@ class Task extends DataModel<Task> {
   final int? id;
   final String title;
   final bool completed;
+
+  Task toggleCompleted() {
+    return Task(id: id, title: title, completed: !completed).withKeyOf(this);
+  }
 }
