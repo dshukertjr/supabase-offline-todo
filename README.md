@@ -2,6 +2,8 @@
 
 Simple example app on how you can use [Hydrated Bloc](https://pub.dev/packages/hydrated_bloc) with Supabase to create an app with offline caching ability.
 
+![Screenshot](https://raw.githubusercontent.com/dshukertjr/supabase-offline-todo/main/screenshot.png "App running on iOS")
+
 ## Table definition
 
 ```sql
