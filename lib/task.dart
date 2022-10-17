@@ -1,24 +1,19 @@
-import 'package:flutter_data/flutter_data.dart';
-import 'package:json_annotation/json_annotation.dart';
-import 'package:offlinetodo/adaptor.dart';
-
-part 'task.g.dart';
-
-@DataRepository([JsonServerAdapter])
-@JsonSerializable()
-class Task extends DataModel<Task> {
+class Task {
   Task({
-    this.id,
+    required this.id,
     required this.title,
     required this.completed,
   });
 
-  @override
-  final int? id;
+  final String id;
   final String title;
   final bool completed;
 
-  Task toggleCompleted() {
-    return Task(id: id, title: title, completed: !completed).withKeyOf(this);
+  factory Task.fromMap(Map<String, dynamic> map) {
+    return Task(
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      completed: map['completed'] ?? false,
+    );
   }
 }

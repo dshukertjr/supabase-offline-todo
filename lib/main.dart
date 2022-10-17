@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_data/flutter_data.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:offlinetodo/main.data.dart';
-import 'package:offlinetodo/task.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:offlinetodo/cubit/task_cubit.dart';
 
 void main() {
-  runApp(ProviderScope(
-    overrides: [configureRepositoryLocalStorage()],
-    child: const MyApp(),
-  ));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -23,75 +18,52 @@ class MyApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
-      home: const HomePage(),
+      home: BlocProvider<TaskCubit>(
+        create: (context) => TaskCubit()..loadTasks(),
+        child: const HomePage(),
+      ),
     );
   }
 }
 
-class HomePage extends ConsumerWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: ref.watch(repositoryInitializerProvider).when(
-            error: (error, _) => Text(error.toString()),
-            loading: () => const CircularProgressIndicator(),
-            data: (_) {
-              ref.tasks.logLevel = 2;
-              // final state = ref.tasks.watchAll();
-              final state =
-                  ref.tasks.watchAll(params: {'_limit': 5}, syncLocal: true);
-              if (state.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return TaskList(state: state);
-            },
-          ),
-    );
-  }
-}
-
-class TaskList extends ConsumerWidget {
-  const TaskList({
-    Key? key,
-    required this.state,
-  }) : super(key: key);
-
-  final DataState<List<Task>?> state;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      children: [
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () =>
-                ref.tasks.findAll(params: {'_limit': 5}, syncLocal: true),
-            child: ListView(
-              children: [
-                for (final task in state.model!)
-                  Dismissible(
-                    key: ValueKey(task),
-                    direction: DismissDirection.endToStart,
-                    background: const DecoratedBox(
-                      decoration: BoxDecoration(color: Colors.red),
-                    ),
-                    onDismissed: (_) => task.delete(),
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: task.completed,
-                        onChanged: (value) => task.toggleCompleted().save(),
+      body: BlocBuilder<TaskCubit, TaskState>(builder: (context, state) {
+        if (state is TaskLoaded) {
+          final tasks = state.tasks;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemBuilder: ((context, index) {
+                    final task = tasks[index];
+                    return Dismissible(
+                      key: ValueKey(task.id),
+                      onDismissed: (_) async {
+                        await BlocProvider.of<TaskCubit>(context)
+                            .deleteTask(task.id);
+                      },
+                      background: const DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.red),
                       ),
-                      title: Text('${task.title} [id: ${task.id}]'),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        const NewTaskComposer(),
-      ],
+                      child: ListTile(
+                        title: Text(task.title),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+              const NewTaskComposer(),
+            ],
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      }),
     );
   }
 }
@@ -104,34 +76,39 @@ class NewTaskComposer extends StatefulWidget {
 }
 
 class _NewTaskComposerState extends State<NewTaskComposer> {
-  final _newTaskController = TextEditingController();
+  final _taskController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    _newTaskController.dispose();
+    _taskController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        controller: _newTaskController,
-        decoration: InputDecoration(
-          hintText: 'Add a new task...',
-          suffix: TextButton(
-            onPressed: () {
-              final value = _newTaskController.text;
-              Task(
-                title: value,
-                completed: false,
-              ).save();
-              _newTaskController.clear();
+    return Form(
+      key: _formKey,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              controller: _taskController,
+              decoration: const InputDecoration(
+                hintText: 'Create new task',
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (!_formKey.currentState!.validate()) return;
+              final title = _taskController.text;
+              await BlocProvider.of<TaskCubit>(context).createTask(title);
+              _taskController.clear();
             },
             child: const Text('Submit'),
           ),
-        ),
+        ],
       ),
     );
   }
