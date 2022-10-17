@@ -1,19 +1,28 @@
+/// Task model to hold individual tasks.
 class Task {
   Task({
     required this.id,
     required this.title,
-    required this.completed,
+    required this.createdAt,
   });
 
   final String id;
   final String title;
-  final bool completed;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
 
   factory Task.fromMap(Map<String, dynamic> map) {
     return Task(
-      id: map['id'] ?? '',
-      title: map['title'] ?? '',
-      completed: map['completed'] ?? false,
+      id: map['id'],
+      title: map['title'],
+      createdAt: DateTime.parse(map['created_at']),
     );
   }
 }

@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:offlinetodo/cubit/task_cubit.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: 'https://pxbyaepzmmevejtkkmmf.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4YnlhZXB6bW1ldmVqdGtrbW1mIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjU5NjkyMjcsImV4cCI6MTk4MTU0NTIyN30.RIU6mT-LxG4Nx_dg9i8ebaDs9R4QFVYrmVN_-uYQYYI',
+  );
+  final storage = await HydratedStorage.build(
+      storageDirectory: await getTemporaryDirectory());
+  HydratedBlocOverrides.runZoned(
+    () => runApp(const MyApp()),
+    storage: storage,
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -26,6 +40,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// Main page presented to the user.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -39,13 +54,13 @@ class HomePage extends StatelessWidget {
             children: [
               Expanded(
                 child: ListView.builder(
+                  itemCount: tasks.length,
                   itemBuilder: ((context, index) {
                     final task = tasks[index];
                     return Dismissible(
                       key: ValueKey(task.id),
-                      onDismissed: (_) async {
-                        await BlocProvider.of<TaskCubit>(context)
-                            .deleteTask(task.id);
+                      onDismissed: (_) {
+                        BlocProvider.of<TaskCubit>(context).deleteTask(task.id);
                       },
                       background: const DecoratedBox(
                         decoration: BoxDecoration(color: Colors.red),
@@ -68,6 +83,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
+/// Form field and a button to compose a new task.
 class NewTaskComposer extends StatefulWidget {
   const NewTaskComposer({super.key});
 
@@ -89,26 +105,32 @@ class _NewTaskComposerState extends State<NewTaskComposer> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              controller: _taskController,
-              decoration: const InputDecoration(
-                hintText: 'Create new task',
+      child: Material(
+        color: const Color(0xFFEEEEEE),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _taskController,
+                  decoration: const InputDecoration(
+                    hintText: 'Create new task',
+                  ),
+                ),
               ),
-            ),
+              TextButton(
+                onPressed: () async {
+                  if (!_formKey.currentState!.validate()) return;
+                  final title = _taskController.text;
+                  BlocProvider.of<TaskCubit>(context).createTask(title);
+                  _taskController.clear();
+                },
+                child: const Text('Submit'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              if (!_formKey.currentState!.validate()) return;
-              final title = _taskController.text;
-              await BlocProvider.of<TaskCubit>(context).createTask(title);
-              _taskController.clear();
-            },
-            child: const Text('Submit'),
-          ),
-        ],
+        ),
       ),
     );
   }
