@@ -1,21 +1,20 @@
 import 'package:flutter_data/flutter_data.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:offlinetodo/adaptor.dart';
 
 part 'task.g.dart';
 
-@DataRepository([])
+@DataRepository([JsonServerAdapter])
 @JsonSerializable()
 class Task extends DataModel<Task> {
   Task({
     this.id,
     required this.title,
-    required this.isCompleted,
-    required this.createdAt,
+    required this.completed,
   });
 
   @override
-  final String? id;
+  final int? id;
   final String title;
-  final bool isCompleted;
-  final DateTime createdAt;
+  final bool completed;
 }

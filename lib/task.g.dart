@@ -33,7 +33,7 @@ final _tasksFinders = <String, dynamic>{};
 // ignore: must_be_immutable
 class $TaskHiveLocalAdapter = HiveLocalAdapter<Task> with $TaskLocalAdapter;
 
-class $TaskRemoteAdapter = RemoteAdapter<Task> with NothingMixin;
+class $TaskRemoteAdapter = RemoteAdapter<Task> with JsonServerAdapter<Task>;
 
 final internalTasksRemoteAdapterProvider = Provider<RemoteAdapter<Task>>(
     (ref) => $TaskRemoteAdapter($TaskHiveLocalAdapter(ref.read, typeId: null),
@@ -42,7 +42,10 @@ final internalTasksRemoteAdapterProvider = Provider<RemoteAdapter<Task>>(
 final tasksRepositoryProvider =
     Provider<Repository<Task>>((ref) => Repository<Task>(ref.read));
 
-extension TaskDataRepositoryX on Repository<Task> {}
+extension TaskDataRepositoryX on Repository<Task> {
+  JsonServerAdapter<Task> get jsonServerAdapter =>
+      remoteAdapter as JsonServerAdapter<Task>;
+}
 
 extension TaskRelationshipGraphNodeX on RelationshipGraphNode<Task> {}
 
@@ -51,15 +54,13 @@ extension TaskRelationshipGraphNodeX on RelationshipGraphNode<Task> {}
 // **************************************************************************
 
 Task _$TaskFromJson(Map<String, dynamic> json) => Task(
-      id: json['id'] as String?,
+      id: json['id'] as int?,
       title: json['title'] as String,
-      isCompleted: json['isCompleted'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      completed: json['completed'] as bool,
     );
 
 Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
-      'isCompleted': instance.isCompleted,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'completed': instance.completed,
     };
